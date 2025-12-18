@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>2048 Puzzle Game</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #faf8ef;
+    text-align: center;
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+#game {
+    width: 320px;
+    height: 320px;
+    margin: auto;
+    background: #bbada0;
+    padding: 10px;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 10px;
+}
+
+.tile {
+    width: 70px;
+    height: 70px;
+    background: #cdc1b4;
+    border-radius: 5px;
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tile-2    { background: #eee4da; }
+.tile-4    { background: #ede0c8; }
+.tile-8    { background: #f2b179; color: #fff; }
+.tile-16   { background: #f59563; color: #fff; }
+.tile-32   { background: #f67c5f; color: #fff; }
+.tile-64   { background: #f65e3b; color: #fff; }
+.tile-128  { background: #edcf72; color: #fff; }
+.tile-256  { background: #edcc61; color: #fff; }
+.tile-512  { background: #edc850; color: #fff; }
+.tile-1024 { background: #edc53f; color: #fff; }
+.tile-2048 { background: #edc22e; color: #fff; }
+
+p {
+    font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>2048</h1>
+<p>Use Arrow Keys to Move</p>
+
+<div id="game"></div>
+
+<script>
+let board = [
+    [0,0,0,0],
+    [0,0,0,0],
+    [0,0,0,0],
+    [0,0,0,0]
+];
+
+const game = document.getElementById("game");
+
+function init() {
+    addRandom();
+    addRandom();
+    draw();
+}
+
+function addRandom() {
+    let empty = [];
+    for (let i=0;i<4;i++) {
+        for (let j=0;j<4;j++) {
+            if (board[i][j] === 0) empty.push([i,j]);
+        }
+    }
+    if (empty.length === 0) return;
+    let [x,y] = empty[Math.floor(Math.random()*empty.length)];
+    board[x][y] = Math.random() < 0.9 ? 2 : 4;
+}
+
+function draw() {
+    game.innerHTML = "";
+    for (let i=0;i<4;i++) {
+        for (let j=0;j<4;j++) {
+            let tile = document.createElement("div");
+            tile.className = "tile";
+            if (board[i][j] !== 0) {
+                tile.textContent = board[i][j];
+                tile.classList.add("tile-" + board[i][j]);
+            }
+            game.appendChild(tile);
+        }
+    }
+}
+
+function slide(row) {
+    row = row.filter(x => x);
+    for (let i=0;i<row.length-1;i++) {
+        if (row[i] === row[i+1]) {
+            row[i] *= 2;
+            row[i+1] = 0;
+        }
+    }
+    row = row.filter(x => x);
+    while (row.length < 4) row.push(0);
+    return row;
+}
+
+function moveLeft() {
+    for (let i=0;i<4;i++) {
+        board[i] = slide(board[i]);
+    }
+}
+
+function moveRight() {
+    for (let i=0;i<4;i++) {
+        board[i] = slide(board[i].reverse()).reverse();
+    }
+}
+
+function transpose() {
+    let newBoard = [
+        [0,0,0,0],
+        [0,0,0,0],
+        [0,0,0,0],
+        [0,0,0,0]
+    ];
+    for (let i=0;i<4;i++)
+        for (let j=0;j<4;j++)
+            newBoard[i][j] = board[j][i];
+    board = newBoard;
+}
+
+function moveUp() {
+    transpose();
+    moveLeft();
+    transpose();
+}
+
+function moveDown() {
+    transpose();
+    moveRight();
+    transpose();
+}
+
+document.addEventListener("keydown", e => {
+    let oldBoard = JSON.stringify(board);
+    if (e.key === "ArrowLeft") moveLeft();
+    if (e.key === "ArrowRight") moveRight();
+    if (e.key === "ArrowUp") moveUp();
+    if (e.key === "ArrowDown") moveDown();
+    if (oldBoard !== JSON.stringify(board)) {
+        addRandom();
+        draw();
+    }
+});
+
+init();
+</script>
+
+</body>
+</html>
